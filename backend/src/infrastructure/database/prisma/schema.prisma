@@ -9,4 +9,26 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Tabla de Departamentos
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique // Ej: "Antioquia", "Cundinamarca"
+  createdAt DateTime @default(now())
+
+  // Conexión: Un departamento tiene una lista de ciudades
+  cities    City[]
+}
+
+// 2. Tabla de Ciudades / Municipios
+model City {
+  id           String     @id @default(uuid())
+  name         String     // Ej: "Medellín", "Bogotá"
+  createdAt    DateTime   @default(now())
+
+  // Conexión: Cada ciudad guarda el ID del departamento al que pertenece
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
