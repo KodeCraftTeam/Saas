@@ -9,7 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 // 1. Tabla de Departamentos
@@ -31,4 +31,17 @@ model City {
   // Conexión: Cada ciudad guarda el ID del departamento al que pertenece
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String     @id
+  email        String     @unique
+  password     String     @default("")
+  name         String     
+  lastName     String     
+  role         String     
+  status       String     
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
 }
