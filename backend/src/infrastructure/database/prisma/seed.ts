@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🗑️ Limpiando datos geográficos antiguos...');
   // Al borrar los departamentos, por la regla "onDelete: Cascade", se borrarán sus ciudades automáticamente.
-  await prisma.department.deleteMany({}); 
+  await prisma.department.deleteMany({});
 
   console.log('🇨🇴 Insertando departamentos y municipios de Colombia...');
 
@@ -18,10 +18,10 @@ async function main() {
           { name: 'Medellín' },
           { name: 'Envigado' },
           { name: 'Rionegro' },
-          { name: 'Bello' }
-        ]
-      }
-    }
+          { name: 'Bello' },
+        ],
+      },
+    },
   });
 
   // 2. Insertamos Cundinamarca con sus ciudades
@@ -33,10 +33,10 @@ async function main() {
           { name: 'Bogotá' },
           { name: 'Soacha' },
           { name: 'Chía' },
-          { name: 'Zipaquirá' }
-        ]
-      }
-    }
+          { name: 'Zipaquirá' },
+        ],
+      },
+    },
   });
 
   // 3. Insertamos Valle del Cauca con sus ciudades
@@ -48,13 +48,15 @@ async function main() {
           { name: 'Cali' },
           { name: 'Palmira' },
           { name: 'Tuluá' },
-          { name: 'Buenaventura' }
-        ]
-      }
-    }
+          { name: 'Buenaventura' },
+        ],
+      },
+    },
   });
 
-  console.log('🌱 ¡Departamentos y ciudades inyectados con éxito en la semilla!');
+  console.log(
+    '🌱 ¡Departamentos y ciudades inyectados con éxito en la semilla!',
+  );
 }
 
 main()
