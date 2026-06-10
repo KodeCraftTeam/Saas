@@ -1,5 +1,5 @@
 // eslint-disable-next-line prettier/prettier
-import { Role, UserStatus } from "../enums";
+import { Role, UserStatus } from "./user.enums";
 
 export class User {
   constructor(

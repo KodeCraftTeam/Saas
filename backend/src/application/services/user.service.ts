@@ -1,44 +1,50 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { User } from '../../domain/entities/User.entity';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { IGeneratePassword } from '../interfaces/generate-password.interface';
-import { UserStatus } from '../../domain/enums';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
+import { UserStatus } from '../../domain/user/user.enums';
+import {
+  IGeneratePassword,
+  IPasswordHasher,
+} from '../../domain/user/user.interface';
+import { User } from '../../domain/user/user.entity';
+import { CreateUserDto } from '../dto/user/create-user.dto';
+import { IUserRepository } from '../../domain/user/user.repository';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
-    @Inject(IGeneratePassword)
     private readonly generatePassword: IGeneratePassword,
-    private readonly prisma: PrismaService,
+    private readonly passwordHasher: IPasswordHasher,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async createUser(userDto: CreateUserDto): Promise<User> {
     const password = this.generatePassword.generatePassword();
 
+    const passwordHash = await this.passwordHasher.hashPassword(password);
+
+    const emailAlreadyExists = await this.userRepository.findEmailExists(
+      userDto.email,
+    );
+
+    if (emailAlreadyExists) {
+      throw new BadRequestException('Email already exists');
+    }
+
     const user = User.Create(
       randomUUID(),
       userDto.email,
-      password,
+      passwordHash,
       userDto.name,
       userDto.lastName,
       userDto.role,
       UserStatus.ACTIVE,
     );
 
-    await this.prisma.user.create({
-      data: {
-        id: user.id,
-        name: user.name,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-        password: user.getPassword(), // ← Necesitas un getter público
-      },
-    });
+    await this.userRepository.create(user);
 
+    this.logger.log(`User created successfully with id: ${user.id}`);
     return user;
   }
 }

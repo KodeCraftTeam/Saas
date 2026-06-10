@@ -1,9 +1,7 @@
 import { randomInt } from 'node:crypto';
-import { IGeneratePassword } from '../../application/interfaces/generate-password.interface';
-import { PASSWORD_CONSTANTS } from '../../domain/constants/password.constants';
-import { Injectable } from '@nestjs/common';
+import { IGeneratePassword } from '../../domain/user/user.interface';
+import { PASSWORD_CONSTANTS } from '../../domain/user/user.constants';
 
-@Injectable()
 export class GeneratePasswordService implements IGeneratePassword {
   generatePassword(): string {
     const length = randomInt(
