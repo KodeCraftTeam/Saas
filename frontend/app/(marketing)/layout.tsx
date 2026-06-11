@@ -40,7 +40,7 @@ export default function MarketingLayout({
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-6">
+      <main className="w-full flex-1">
         {children}
       </main>
     </div>
