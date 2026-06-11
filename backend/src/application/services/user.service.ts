@@ -6,8 +6,8 @@ import {
   IPasswordHasher,
 } from '../../domain/user/user.interface';
 import { User } from '../../domain/user/user.entity';
-import { CreateUserDto } from '../dto/user/create-user.dto';
 import { IUserRepository } from '../../domain/user/user.repository';
+import { CreateUserDto } from '../dto/user/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -19,8 +19,10 @@ export class UserService {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async createUser(userDto: CreateUserDto): Promise<User> {
+  async createUser(userDto: CreateUserDto): Promise<string> {
     const password = this.generatePassword.generatePassword();
+
+    console.log(password, 'password');
 
     const passwordHash = await this.passwordHasher.hashPassword(password);
 
@@ -45,6 +47,6 @@ export class UserService {
     await this.userRepository.create(user);
 
     this.logger.log(`User created successfully with id: ${user.id}`);
-    return user;
+    return user.id;
   }
 }
