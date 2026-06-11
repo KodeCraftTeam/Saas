@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { GeneratePasswordService } from './generate-password.service';
+import { GeneratePasswordService } from './services/generate-password.service';
 import {
   IGeneratePassword,
   IPasswordHasher,
-} from '../../domain/user/user.interface';
-import { PasswordHasher } from './password-hasher.service';
+} from '../domain/user/user.interface';
+import { PasswordHasher } from './services/password-hasher.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ITokenService } from '../../application/interfaces/token.interface';
-import { JwtTokenService } from './jwt-token.service';
+import { ITokenService } from '../application/interfaces/token.interface';
+import { JwtTokenService } from './services/jwt-token.service';
 
 @Module({
   imports: [

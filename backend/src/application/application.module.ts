@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { InfrastructureModule } from '../infrastructure/services/infrastructure.module';
+import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { UserService } from './services/user.service';
 import { AuthService } from './services/auth.service';
 
