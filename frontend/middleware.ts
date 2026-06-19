@@ -31,6 +31,7 @@ function getTenantSlug(host: string): string | null {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log(`[invocaided middleware] [${pathname}]`)
   const host = request.headers.get("host") ?? "";
   const tenantSlug = getTenantSlug(host);
 
@@ -44,8 +45,7 @@ export function middleware(request: NextRequest) {
   const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  // TODO: replace with real session check (cookie or token)
-  const hasSession = request.cookies.has("session");
+  const hasSession = request.cookies.has("token");
 
   if (isProtected && !hasSession) {
     return NextResponse.redirect(new URL("/login", request.url));

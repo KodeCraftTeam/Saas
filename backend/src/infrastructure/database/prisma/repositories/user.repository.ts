@@ -18,11 +18,11 @@ export class UserRepository implements IUserRepository {
     return User.Create(
       userModel.id,
       userModel.email,
-      userModel.password,
       userModel.name,
       userModel.lastName,
       userModel.role as Role,
       userModel.status as UserStatus,
+      userModel.password,
     );
   }
 
@@ -47,6 +47,4 @@ export class UserRepository implements IUserRepository {
       },
     });
   }
-
-  async;
 }
