@@ -36,6 +36,10 @@ export function LoginForm() {
     }
   }
 
+  async function fetchGoogleToken() {
+    window.location.href = "http://localhost:3001/api/auth/google";
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Botón de Google — delay 3 */}
@@ -44,7 +48,7 @@ export function LoginForm() {
           type="button"
           variant="outline"
           className="w-full gap-3"
-          onClick={() => console.log("Google login")}
+          onClick={fetchGoogleToken}
         >
           <GoogleIcon className="h-[18px] w-[18px]" />
           Continuar con Google

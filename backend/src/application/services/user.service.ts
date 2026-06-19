@@ -37,11 +37,11 @@ export class UserService {
     const user = User.Create(
       randomUUID(),
       userDto.email,
-      passwordHash,
       userDto.name,
       userDto.lastName,
       userDto.role,
       UserStatus.ACTIVE,
+      passwordHash,
     );
 
     await this.userRepository.create(user);

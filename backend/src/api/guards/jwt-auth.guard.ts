@@ -1,15 +1,22 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { ITokenService } from '../../application/interfaces/token.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+  constructor(private readonly tokenService: ITokenService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    console.log(request);
-
-    if (!request.headers.authorization) {
+    if (!request.cookies.token) {
       return false;
     }
+
+    const token = request.cookies.token as string;
+
+    const payload = await this.tokenService.verify(token);
+
+    request.user = payload;
 
     return true;
   }

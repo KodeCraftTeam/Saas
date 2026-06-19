@@ -5,26 +5,28 @@ export class User {
   constructor(
     public id: string,
     public email: string,
-    private readonly password: string,
     public name: string,
     public lastName: string,
-    public role: Role,
+    public role: Role | null,
     public status: UserStatus,
+    private password: string | null,
   ) {}
 
   public static Create(
     id: string,
     email: string,
-    password: string,
     name: string,
     lastName: string,
-    role: Role,
+    role: Role | null,
     status: UserStatus,
+    password: string | null,
   ): User {
-    return new User(id, email, password, name, lastName, role, status);
+    return new User(id, email, name, lastName, role, status, password);
   }
 
   getPassword(): string {
+    if (!this.password) throw new Error('Password not set');
+
     return this.password;
   }
 }

@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,27 +7,25 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-// 1. Tabla de Departamentos
 model Department {
   @@map("Departments")
 
   id        String   @id @default(uuid())
-  name      String   @unique // Ej: "Antioquia", "Cundinamarca"
+  name      String   @unique
   createdAt DateTime @default(now())
 
-  // Conexión: Un departamento tiene una lista de ciudades
+
   cities    City[]
 }
 
-// 2. Tabla de Ciudades / Municipios
 model City {
   @@map("Cities")
 
   id           String     @id @default(uuid())
-  name         String     // Ej: "Medellín", "Bogotá"
+  name         String     
   createdAt    DateTime   @default(now())
 
-  // Conexión: Cada ciudad guarda el ID del departamento al que pertenece
+
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
@@ -42,12 +35,31 @@ model UserModel {
 
   id           String     @id
   email        String     @unique
-  password     String     @default("")
+  password     String?    @default("")
   name         String     
   lastName     String     
-  role         String     
+  role         String?     
   status       String     
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
+  updatedAt    DateTime?   @updatedAt
+  needsOnBoarding Boolean      @default(false)
+  
+  businessModelId String?
+  businessModel   BusinessModel? @relation(fields: [businessModelId], references: [id], onDelete: Cascade)
 }
+
+model BusinessModel {
+  @@map("BusinessModels")
+
+  id           String     @id
+  name         String     
+  phone        String     
+  cityId       String     
+  city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime   @default(now())
+  
+
+  updatedAt    DateTime?   @updatedAt
+}
+
