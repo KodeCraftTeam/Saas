@@ -5,6 +5,8 @@ import { UserController } from './api/controllers/user.controller';
 import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './api/controllers/auth.controller';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { LocationController } from './api/controllers/location.controller';
+import { BussinessController } from './api/controllers/bussiness.controller';
 
 @Module({
   imports: [
@@ -15,7 +17,12 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
       isGlobal: true,
     }),
   ],
-  controllers: [UserController, AuthController],
+  controllers: [
+    UserController,
+    AuthController,
+    LocationController,
+    BussinessController,
+  ],
   providers: [],
 })
 export class AppModule {}

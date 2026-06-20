@@ -9,6 +9,7 @@ export class Bussiness {
     public type: BussinessType,
     public status: BussinessStatus,
     public cityId: string,
+    public address: string,
   ) {}
 
   public static Create(
@@ -19,7 +20,8 @@ export class Bussiness {
     type: BussinessType,
     status: BussinessStatus,
     cityId: string,
+    address: string,
   ): Bussiness {
-    return new Bussiness(id, name, phone, email, type, status, cityId);
+    return new Bussiness(id, name, phone, email, type, status, cityId, address);
   }
 }

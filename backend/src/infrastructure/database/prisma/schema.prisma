@@ -7,27 +7,14 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-model Department {
-  @@map("Departments")
-
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-
-
-  cities    City[]
-}
 
 model City {
   @@map("Cities")
 
   id           String     @id @default(uuid())
   name         String     
-  createdAt    DateTime   @default(now())
 
-
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  businesses BusinessModel[]
 }
 
 model UserModel {
@@ -48,18 +35,24 @@ model UserModel {
   businessModel   BusinessModel? @relation(fields: [businessModelId], references: [id], onDelete: Cascade)
 }
 
+
 model BusinessModel {
   @@map("BusinessModels")
 
   id           String     @id
   name         String     
   phone        String     
-  cityId       String     
-  city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime   @default(now())
-  
+  email        String
+  type         String
+  status       String
+  address      String
 
+  cityId       String     
+  city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)  
+
+  createdAt    DateTime   @default(now())
   updatedAt    DateTime?   @updatedAt
+  
+  users        UserModel[]
 }
 
