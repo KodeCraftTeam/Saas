@@ -7,6 +7,7 @@ import { AuthController } from './api/controllers/auth.controller';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { LocationController } from './api/controllers/location.controller';
 import { BussinessController } from './api/controllers/bussiness.controller';
+import { DashboardController } from './api/controllers/dashboard.controller';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BussinessController } from './api/controllers/bussiness.controller';
     AuthController,
     LocationController,
     BussinessController,
+    DashboardController,
   ],
   providers: [],
 })

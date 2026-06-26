@@ -14,7 +14,7 @@ model City {
   id           String     @id @default(uuid())
   name         String     
 
-  businesses BusinessModel[]
+  bussiness BussinessModel[]
 }
 
 model UserModel {
@@ -31,13 +31,13 @@ model UserModel {
   updatedAt    DateTime?   @updatedAt
   needsOnBoarding Boolean      @default(false)
   
-  businessModelId String?
-  businessModel   BusinessModel? @relation(fields: [businessModelId], references: [id], onDelete: Cascade)
+  bussinessId String?
+  bussinessModel   BussinessModel? @relation(fields: [bussinessId], references: [id], onDelete: Cascade)
 }
 
 
-model BusinessModel {
-  @@map("BusinessModels")
+model BussinessModel {
+  @@map("Bussiness")
 
   id           String     @id
   name         String     

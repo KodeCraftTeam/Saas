@@ -6,6 +6,12 @@ import { IBussinessRepository } from '../../../domain/Bussiness/bussiness.reposi
 import { ILocationRepository } from '../../../domain/location/location.repository';
 import { BussinessRepository } from './repositories/bussiness.repository';
 import { LocationRepository } from './repositories/location.repository';
+import { DashboardBusinessesReader } from '../../../application/ports/dashboard/dashboard-businesses.reader';
+import { DashboardCustomersReader } from '../../../application/ports/dashboard/dashboard-customers.reader';
+import { DashboardBusinessesPrismaReader } from './readers/dashboard-businesses.prisma-reader';
+import { DashboardCustomersPrismaReader } from './readers/dashboard-customers.prisma-reader';
+import { BussinessReader } from '../../../application/ports/bussiness/bussiness.reader';
+import { BussinessPrismaReader } from './readers/bussiness.prisma-reader';
 
 @Global()
 @Module({
@@ -24,12 +30,27 @@ import { LocationRepository } from './repositories/location.repository';
       provide: ILocationRepository,
       useClass: LocationRepository,
     },
+    {
+      provide: DashboardBusinessesReader,
+      useClass: DashboardBusinessesPrismaReader,
+    },
+    {
+      provide: DashboardCustomersReader,
+      useClass: DashboardCustomersPrismaReader,
+    },
+    {
+      provide: BussinessReader,
+      useClass: BussinessPrismaReader,
+    },
   ],
   exports: [
     PrismaService,
     IUserRepository,
     IBussinessRepository,
     ILocationRepository,
+    DashboardBusinessesReader,
+    DashboardCustomersReader,
+    BussinessReader,
   ],
 })
 export class PrismaModule {}

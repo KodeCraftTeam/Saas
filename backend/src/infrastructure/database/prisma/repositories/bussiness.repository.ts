@@ -8,7 +8,7 @@ export class BussinessRepository implements IBussinessRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(business: Bussiness): Promise<void> {
-    await this.prisma.businessModel.create({
+    await this.prisma.bussinessModel.create({
       data: {
         id: business.id,
         name: business.name,
@@ -22,16 +22,24 @@ export class BussinessRepository implements IBussinessRepository {
     });
   }
 
-  // findById(id: string): Promise<Bussiness | null> {
-  //   throw new Error('Method not implemented.');
-  // }
-  // findAll(): Promise<Bussiness[]> {
-  //   throw new Error('Method not implemented.');
-  // }
-  // update(business: Bussiness): Promise<void> {
-  //   throw new Error('Method not implemented.');
-  // }
-  // changeStatus(id: string, status: string): Promise<void> {
-  //   throw new Error('Method not implemented.');
-  // }
+  async findEmailExists(email: string): Promise<boolean> {
+    const emailAlreadyExists = await this.prisma.bussinessModel.findFirst({
+      where: { email: email },
+    });
+
+    return emailAlreadyExists !== null;
+  }
 }
+
+// findById(id: string): Promise<Bussiness | null> {
+//   throw new Error('Method not implemented.');
+// }
+// findAll(): Promise<Bussiness[]> {
+//   throw new Error('Method not implemented.');
+// }
+// update(business: Bussiness): Promise<void> {
+//   throw new Error('Method not implemented.');
+// }
+// changeStatus(id: string, status: string): Promise<void> {
+//   throw new Error('Method not implemented.');
+// }
