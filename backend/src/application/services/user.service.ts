@@ -8,6 +8,8 @@ import {
 import { User } from '../../domain/user/user.entity';
 import { IUserRepository } from '../../domain/user/user.repository';
 import { CreateUserDto } from '../dto/user/create-user.dto';
+import { UsersReader } from '../ports/users/users.reader';
+import { ListUsersReadModel } from '../read-models/users/list-users.read-model';
 
 @Injectable()
 export class UserService {
@@ -17,6 +19,7 @@ export class UserService {
     private readonly generatePassword: IGeneratePassword,
     private readonly passwordHasher: IPasswordHasher,
     private readonly userRepository: IUserRepository,
+    private readonly usersReader: UsersReader,
   ) {}
 
   async createUser(userDto: CreateUserDto): Promise<string> {
@@ -48,5 +51,13 @@ export class UserService {
 
     this.logger.log(`User created successfully with id: ${user.id}`);
     return user.id;
+  }
+
+  async listUsers(
+    search?: string,
+    page?: number,
+    limit?: number,
+  ): Promise<ListUsersReadModel> {
+    return await this.usersReader.listUsers(search, page, limit);
   }
 }

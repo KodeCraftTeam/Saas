@@ -12,6 +12,8 @@ import { DashboardBusinessesPrismaReader } from './readers/dashboard-businesses.
 import { DashboardCustomersPrismaReader } from './readers/dashboard-customers.prisma-reader';
 import { BussinessReader } from '../../../application/ports/bussiness/bussiness.reader';
 import { BussinessPrismaReader } from './readers/bussiness.prisma-reader';
+import { UsersPrismaReader } from './readers/users.prisma-reader';
+import { UsersReader } from '../../../application/ports/users/users.reader';
 
 @Global()
 @Module({
@@ -42,6 +44,10 @@ import { BussinessPrismaReader } from './readers/bussiness.prisma-reader';
       provide: BussinessReader,
       useClass: BussinessPrismaReader,
     },
+    {
+      provide: UsersReader,
+      useClass: UsersPrismaReader,
+    },
   ],
   exports: [
     PrismaService,
@@ -51,6 +57,7 @@ import { BussinessPrismaReader } from './readers/bussiness.prisma-reader';
     DashboardBusinessesReader,
     DashboardCustomersReader,
     BussinessReader,
+    UsersReader,
   ],
 })
 export class PrismaModule {}

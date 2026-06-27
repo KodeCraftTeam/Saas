@@ -27,8 +27,8 @@ model UserModel {
   lastName     String     
   role         String?     
   status       String     
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?   @updatedAt
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(3)
   needsOnBoarding Boolean      @default(false)
   
   bussinessId String?
@@ -50,9 +50,9 @@ model BussinessModel {
   cityId       String     
   city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)  
 
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?   @updatedAt
-  
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(3)
+
   users        UserModel[]
 }
 

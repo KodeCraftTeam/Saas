@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Role } from '../../domain/user/user.enums';
@@ -7,6 +8,8 @@ import { CreateBussinessDto } from '../../application/dto/bussiness/create-bussi
 import { BussinessService } from '../../application/services/bussiness.service';
 import { ListBussinessReadModel } from '../../application/read-models/bussiness/list-bussiness.read-model';
 
+@ApiTags('Bussiness')
+@ApiCookieAuth('token')
 @Controller('bussiness')
 export class BussinessController {
   constructor(private readonly bussinessService: BussinessService) {}
