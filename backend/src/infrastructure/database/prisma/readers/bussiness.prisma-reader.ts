@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BussinessReader } from '../../../../application/ports/bussiness/bussiness.reader';
-import { ListBussinessReadModel } from '../../../../application/read-models/bussiness/list-bussiness.read-model';
+import { ListBussinessReadModel, BussinessReadModel } from '../../../../application/read-models/bussiness/list-bussiness.read-model';
 import {
   BussinessStatus,
   BussinessType,
@@ -56,6 +56,26 @@ export class BussinessPrismaReader implements BussinessReader {
         email: business.email,
         bussinessStatus: business.status as BussinessStatus,
       })),
+    };
+  }
+
+  async findBussinessById(id: string): Promise<BussinessReadModel | null> {
+    const business = await this.prisma.bussinessModel.findFirst({
+      where: { id },
+      include: { city: true },
+    });
+
+    if (!business) return null;
+
+    return {
+      id: business.id,
+      name: business.name,
+      BussinessType: business.type as BussinessType,
+      city: business.city.name,
+      address: business.address,
+      phone: business.phone,
+      email: business.email,
+      bussinessStatus: business.status as BussinessStatus,
     };
   }
 }
