@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, getBusinesses, createUser, User, Business } from "@/features/super-admin/api";
+import { getUsers, createUser, User } from "@/features/super-admin/api";
 import { useToast } from "@/shared/components/ui/Toast";
-import { Users, Plus, Search, RefreshCw, X, Mail, Shield, Building } from "lucide-react";
+import { Users, Plus, Search, RefreshCw, X, Mail, Shield, Building, Clock } from "lucide-react";
+
+const ROLE_OPTIONS = [
+  { value: "BUSSINESS_MANAGER", label: "Business Manager (dueño de negocio)" },
+  { value: "EMPLOYEE", label: "Employee" },
+  { value: "CUSTOMER", label: "Customer" },
+  { value: "SUPER_ADMIN", label: "Super Admin" },
+];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -17,18 +23,14 @@ export default function UsersPage() {
   const [formName, setFormName] = useState("");
   const [formLastName, setFormLastName] = useState("");
   const [formEmail, setFormEmail] = useState("");
-  const [formRole, setFormRole] = useState("OWNER");
-  const [formBusinessId, setFormBusinessId] = useState("");
+  const [formRole, setFormRole] = useState("BUSSINESS_MANAGER");
   const [formError, setFormError] = useState<string | null>(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [uList, bList] = await Promise.all([getUsers(), getBusinesses()]);
-      setUsers(uList);
-      setBusinesses(bList);
-      if (bList.length > 0) setFormBusinessId(bList[0].id);
+      setUsers(await getUsers());
     } catch (e) {
       console.error("Error loading users:", e);
     } finally {
@@ -55,7 +57,6 @@ export default function UsersPage() {
         lastName: formLastName,
         email: formEmail,
         role: formRole,
-        businessId: formRole === "OWNER" ? formBusinessId : undefined,
       });
 
       toast({
@@ -68,7 +69,7 @@ export default function UsersPage() {
       setFormName("");
       setFormLastName("");
       setFormEmail("");
-      setFormRole("OWNER");
+      setFormRole("BUSSINESS_MANAGER");
       setIsModalOpen(false);
       await loadData();
     } catch (err: any) {
@@ -87,6 +88,11 @@ export default function UsersPage() {
       u.role.toLowerCase().includes(query)
     );
   });
+
+  const superAdminCount = users.filter((u) => u.role === "SUPER_ADMIN").length;
+  const lastUser = [...users].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )[0];
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-pure-white text-ink font-sohne select-none antialiased">
@@ -125,6 +131,39 @@ export default function UsersPage() {
           <p className="mt-1.5 text-[15px] text-ash font-[430]">
             Administra y asigna roles a los administradores de negocios, barberos y superadministradores.
           </p>
+        </div>
+
+        {/* ── Stat strip ── */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-cards bg-pure-white border border-dove/20 p-5 shadow-subtle flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-graphite uppercase tracking-wider">Total usuarios</p>
+              <p className="mt-2 text-2xl font-bold text-ink font-signifier">{users.length}</p>
+            </div>
+            <Users className="h-8 w-8 text-rust/30" />
+          </div>
+
+          <div className="rounded-cards bg-apricot-wash p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-rust uppercase tracking-wider">Super Admins</p>
+              <p className="mt-2 text-2xl font-bold text-rust font-signifier">
+                {superAdminCount} <span className="text-sm font-medium text-rust/70">/ {users.length}</span>
+              </p>
+            </div>
+            <Shield className="h-8 w-8 text-rust/40" />
+          </div>
+
+          <div className="rounded-cards bg-pure-white border border-dove/20 p-5 shadow-subtle flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-graphite uppercase tracking-wider">Último registro</p>
+              <p className="mt-2 text-2xl font-bold text-ink font-signifier">
+                {lastUser
+                  ? new Date(lastUser.createdAt).toLocaleDateString("es-CO", { day: "numeric", month: "short" })
+                  : "—"}
+              </p>
+            </div>
+            <Clock className="h-8 w-8 text-rust/30" />
+          </div>
         </div>
 
         {/* ── Toolbar ── */}
@@ -293,28 +332,11 @@ export default function UsersPage() {
                     onChange={(e) => setFormRole(e.target.value)}
                     className="w-full rounded-inputs border border-dove/30 px-3.5 py-2 text-sm focus:border-ink focus:outline-none transition-colors bg-pure-white"
                   >
-                    <option value="OWNER">Propietario de Negocio (Owner)</option>
-                    <option value="SUPER_ADMIN">Super Administrador (Super Admin)</option>
+                    {ROLE_OPTIONS.map((r) => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
                   </select>
                 </div>
-
-                {formRole === "OWNER" && (
-                  <div>
-                    <label className="block text-[11px] font-bold text-graphite uppercase tracking-wider mb-1.5">Asignar a Negocio</label>
-                    <select
-                      value={formBusinessId}
-                      required
-                      onChange={(e) => setFormBusinessId(e.target.value)}
-                      className="w-full rounded-inputs border border-dove/30 px-3.5 py-2 text-sm focus:border-ink focus:outline-none transition-colors bg-pure-white"
-                    >
-                      {businesses.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name} ({b.cityName || "Bogotá"})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </form>
             </div>
 

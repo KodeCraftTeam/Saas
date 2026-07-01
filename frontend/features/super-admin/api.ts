@@ -1,8 +1,7 @@
 /**
  * features/super-admin/api.ts
- * 
+ *
  * Funciones de integración con el backend para la plataforma de Super Administrador.
- * Si las rutas no están implementadas en el backend, devuelven datos mockeados y registran un aviso en consola.
  */
 
 export interface Business {
@@ -45,12 +44,74 @@ export interface City {
 
 const BACKEND_URL = "http://localhost:3001/api";
 
+/** Backend shape de GET /bussiness/list — nombres denormalizados, sin cityId ni createdAt. */
+interface BussinessReadModel {
+  id: string;
+  name: string;
+  BussinessType: Business["type"];
+  city: string;
+  address: string;
+  phone: string;
+  email: string;
+  bussinessStatus: Business["status"];
+}
+
+/** Backend shape de GET /users/list */
+interface UserReadModel {
+  id: string;
+  name: string;
+  lastName: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  bussinessName: string | null;
+  status: string;
+}
+
+/** Backend shape de GET /dashboard */
+interface GetDashboardDto {
+  activeBusinesses: number;
+  registeredCustomers: number;
+  recentlyAddedBusinesses: { total: number; data: unknown[] };
+  recentlyAddedCustomers: { total: number; data: unknown[] };
+}
+
+function mapBusiness(b: BussinessReadModel): Business {
+  return {
+    id: b.id,
+    name: b.name,
+    phone: b.phone,
+    email: b.email,
+    type: b.BussinessType,
+    status: b.bussinessStatus,
+    address: b.address,
+    cityId: "", // el read-model de listado no expone el id, solo el nombre resuelto
+    cityName: b.city,
+    createdAt: "", // no expuesto por /bussiness/list todavía
+  };
+}
+
+function mapUser(u: UserReadModel): User {
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    lastName: u.lastName,
+    role: u.role,
+    status: u.status,
+    createdAt: u.createdAt,
+    businessId: null, // /users/list solo expone el nombre del negocio, no el id
+    businessName: u.bussinessName,
+  };
+}
+
 // ── GET CITIES ──
 export async function getCities(): Promise<City[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/location/cities`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Error fetching cities");
     return await res.json();
@@ -67,101 +128,45 @@ export async function getCities(): Promise<City[]> {
 
 // ── GET STATS ──
 export async function getPlatformStats(): Promise<PlatformStats> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/super-admin/stats`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error("Error fetching stats");
-    return await res.json();
-  } catch (error) {
-    console.warn("[SuperAdmin API] Fallback to mock stats (endpoint GET /api/super-admin/stats not found):", error);
-    return {
-      activeBusinesses: 2,
-      registeredUsers: 1,
-      platformRevenue: 0,
-      activeBusinessesDelta: "+2",
-      registeredUsersDelta: "+1",
-    };
-  }
+  const res = await fetch(`${BACKEND_URL}/dashboard`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Error fetching platform stats");
+  const dto: GetDashboardDto = await res.json();
+
+  return {
+    activeBusinesses: dto.activeBusinesses,
+    registeredUsers: dto.registeredCustomers,
+    platformRevenue: 0, // no hay modelo de facturación en backend todavía
+    activeBusinessesDelta: dto.recentlyAddedBusinesses.total > 0 ? `+${dto.recentlyAddedBusinesses.total}` : undefined,
+    registeredUsersDelta: dto.recentlyAddedCustomers.total > 0 ? `+${dto.recentlyAddedCustomers.total}` : undefined,
+  };
 }
 
 // ── GET BUSINESSES ──
 export async function getBusinesses(): Promise<Business[]> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/super-admin/businesses`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error("Error fetching businesses");
-    return await res.json();
-  } catch (error) {
-    console.warn("[SuperAdmin API] Fallback to mock businesses (endpoint GET /api/super-admin/businesses not found):", error);
-    return [
-      {
-        id: "f7f01c34",
-        name: "KodeCraft Barberia",
-        phone: "+57 312 456 7890",
-        email: "contacto@barberia.com",
-        type: "BARBER",
-        status: "ACTIVE",
-        address: "Calle 85 #11-34",
-        cityId: "bogota-uuid",
-        cityName: "Bogotá",
-        createdAt: "2026-06-24T14:30:00Z",
-      },
-      {
-        id: "262ab4f2",
-        name: "KodeCraft Spa Medellín",
-        phone: "+57 300 987 6543",
-        email: "medellin@spa.com",
-        type: "SPA",
-        status: "ACTIVE",
-        address: "Carrera 43A #5A-20",
-        cityId: "medellin-uuid",
-        cityName: "Medellín",
-        createdAt: "2026-06-24T14:32:00Z",
-      },
-    ];
-  }
+  const res = await fetch(`${BACKEND_URL}/bussiness/list?limit=100`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Error fetching businesses");
+  const json = await res.json();
+  return (json.data as BussinessReadModel[]).map(mapBusiness);
 }
 
 // ── GET USERS ──
 export async function getUsers(): Promise<User[]> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/super-admin/users`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error("Error fetching users");
-    return await res.json();
-  } catch (error) {
-    console.warn("[SuperAdmin API] Fallback to mock users (endpoint GET /api/super-admin/users not found):", error);
-    return [
-      {
-        id: "usr-01",
-        email: "kodeCraft@gmail.com",
-        name: "Super",
-        lastName: "Admin",
-        role: "SUPER_ADMIN",
-        status: "ACTIVE",
-        createdAt: "2026-06-23T09:00:00Z",
-        businessId: null,
-        businessName: null,
-      },
-      {
-        id: "usr-02",
-        email: "david@owner.com",
-        name: "David",
-        lastName: "Owner",
-        role: "OWNER",
-        status: "ACTIVE",
-        createdAt: "2026-06-24T14:30:00Z",
-        businessId: "f7f01c34",
-        businessName: "KodeCraft Barberia",
-      },
-    ];
-  }
+  const res = await fetch(`${BACKEND_URL}/users/list?limit=100`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Error fetching users");
+  const json = await res.json();
+  return (json.data as UserReadModel[]).map(mapUser);
 }
 
 // ── CREATE BUSINESS ──
@@ -172,10 +177,11 @@ export async function createBusiness(data: {
   type: string;
   cityId: string;
   address: string;
-}): Promise<any> {
+}): Promise<{ id: string }> {
   const res = await fetch(`${BACKEND_URL}/bussiness/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -191,11 +197,11 @@ export async function createUser(data: {
   name: string;
   lastName: string;
   role: string;
-  businessId?: string;
-}): Promise<any> {
+}): Promise<{ userId: string }> {
   const res = await fetch(`${BACKEND_URL}/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(data),
   });
   if (!res.ok) {

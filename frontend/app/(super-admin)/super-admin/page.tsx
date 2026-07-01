@@ -34,6 +34,19 @@ function todayLabel() {
   });
 }
 
+function timeAgo(dateStr: string) {
+  const time = new Date(dateStr).getTime();
+  if (!dateStr || Number.isNaN(time)) return "fecha no disponible";
+  const diffMs = Date.now() - time;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "hace instantes";
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.floor(hours / 24);
+  return `hace ${days} d`;
+}
+
 export default function SuperAdminDashboard() {
   const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState<PlatformStats | null>(null);
@@ -81,6 +94,18 @@ export default function SuperAdminDashboard() {
   const businessCount = useCounter(stats?.activeBusinesses ?? 0);
   const userCount = useCounter(stats?.registeredUsers ?? 0);
   const revenueCount = useCounter(stats?.platformRevenue ?? 0);
+
+  const safeTime = (d: string) => {
+    const t = new Date(d).getTime();
+    return Number.isNaN(t) ? -Infinity : t;
+  };
+
+  const recentActivity = [
+    ...businesses.map((b) => ({ type: "business" as const, id: b.id, label: b.name, date: b.createdAt })),
+    ...users.map((u) => ({ type: "user" as const, id: u.id, label: `${u.name} ${u.lastName}`, date: u.createdAt })),
+  ]
+    .sort((a, b) => safeTime(b.date) - safeTime(a.date))
+    .slice(0, 6);
 
   // Calendar calculations
   const year = currentDate.getFullYear();
@@ -232,8 +257,16 @@ export default function SuperAdminDashboard() {
                         <p className="text-xs text-graphite">{b.cityName || "Bogotá"} • {b.type}</p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-pure-white px-2.5 py-0.5 text-xs font-medium text-rust border border-dove/15">
-                      Activo
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                        b.status === "ACTIVE"
+                          ? "bg-pure-white text-rust border-dove/15"
+                          : b.status === "PENDING_ONBOARDING"
+                          ? "bg-apricot-wash text-rust border-transparent"
+                          : "bg-fog text-graphite border-dove/15"
+                      }`}
+                    >
+                      {b.status === "ACTIVE" ? "Activo" : b.status === "PENDING_ONBOARDING" ? "Pendiente" : "Inactivo"}
                     </span>
                   </div>
                 ))}
@@ -265,14 +298,93 @@ export default function SuperAdminDashboard() {
                         <p className="text-xs text-graphite">{u.email} • {u.role}</p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-pure-white px-2.5 py-0.5 text-xs font-medium text-ink border border-dove/15">
-                      Activo
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                        u.status === "ACTIVE"
+                          ? "bg-pure-white text-ink border-dove/15"
+                          : "bg-fog text-graphite border-dove/15"
+                      }`}
+                    >
+                      {u.status === "ACTIVE" ? "Activo" : "Inactivo"}
                     </span>
                   </div>
                 ))}
               </div>
             )}
           </div>
+        </div>
+
+        {/* ── Stat chips (métricas rápidas derivadas) ── */}
+        <div className="grid grid-cols-4 gap-4">
+          {(() => {
+            const activeCount = businesses.filter((b) => b.status === "ACTIVE").length;
+            const pendingCount = businesses.filter((b) => b.status === "PENDING_ONBOARDING").length;
+            const citiesCount = new Set(businesses.map((b) => b.cityName).filter(Boolean)).size;
+            const avgUsersPerBusiness = businesses.length > 0 ? (users.length / businesses.length).toFixed(1) : "0";
+            const chips = [
+              { label: "Tasa de negocios activos", value: businesses.length > 0 ? `${Math.round((activeCount / businesses.length) * 100)}%` : "—", icon: Building2 },
+              { label: "Pendientes de aprobación", value: pendingCount, icon: ChevronRight },
+              { label: "Ciudades con presencia", value: citiesCount, icon: CalendarIcon },
+              { label: "Usuarios por negocio", value: avgUsersPerBusiness, icon: Users },
+            ];
+            return chips.map((c) => (
+              <div
+                key={c.label}
+                className="rounded-[18px] border border-dove/20 bg-pure-white px-5 py-4 flex items-center gap-3 transition-colors hover:border-dove/40"
+              >
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-fog text-graphite">
+                  <c.icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-ink font-signifier leading-none">{c.value}</p>
+                  <p className="mt-1 text-[11px] text-graphite truncate">{c.label}</p>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+
+        {/* ── Actividad reciente ── */}
+        <div className="rounded-cards bg-pure-white border border-dove/20 p-6 shadow-subtle">
+          <div className="mb-5 flex items-center justify-between border-b border-dove/10 pb-4">
+            <h2 className="text-base font-[480] tracking-[-0.009em] text-ink">Actividad reciente</h2>
+            <span className="rounded-full bg-fog px-3 py-1 text-xs font-bold text-graphite border border-dove/10">
+              Últimos eventos
+            </span>
+          </div>
+
+          {recentActivity.length === 0 ? (
+            <p className="text-sm text-graphite">Sin actividad reciente.</p>
+          ) : (
+            <div className="space-y-5">
+              {recentActivity.map((item, idx) => (
+                <div key={`${item.type}-${item.id}`} className="relative flex items-start gap-4 pl-6">
+                  {idx < recentActivity.length - 1 && (
+                    <span className="absolute left-[7px] top-5 h-[calc(100%+8px)] w-px bg-dove/15" />
+                  )}
+                  <span
+                    className={`absolute left-0 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-pure-white ${
+                      item.type === "business" ? "bg-rust" : "bg-ink"
+                    }`}
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm text-ink">
+                      <span className="font-[480]">
+                        {item.type === "business" ? "Negocio creado" : "Usuario creado"}
+                      </span>
+                      <span className="text-ash"> · {item.label}</span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-graphite">{timeAgo(item.date)}</p>
+                  </div>
+                  {item.type === "business" ? (
+                    <Building2 className="h-4 w-4 flex-shrink-0 text-rust/40" />
+                  ) : (
+                    <Users className="h-4 w-4 flex-shrink-0 text-ink/30" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
