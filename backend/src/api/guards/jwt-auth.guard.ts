@@ -6,18 +6,23 @@ export class AuthGuard implements CanActivate {
   constructor(private readonly tokenService: ITokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    try {
+      const request = context.switchToHttp().getRequest();
 
-    if (!request.cookies.token) {
+      if (!request.cookies.token) {
+        return false;
+      }
+
+      const token = request.cookies.token as string;
+
+      const payload = await this.tokenService.verify(token);
+
+      request.user = payload;
+
+      return true;
+    } catch (error) {
+      console.error(error);
       return false;
     }
-
-    const token = request.cookies.token as string;
-
-    const payload = await this.tokenService.verify(token);
-
-    request.user = payload;
-
-    return true;
   }
 }

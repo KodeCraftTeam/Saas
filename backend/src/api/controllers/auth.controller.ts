@@ -3,20 +3,24 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Query,
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../../application/services/auth.service';
 import { LoginDto } from '../../application/dto/user/login-user.dto';
 import { LoginResponseDto } from '../../application/dto/user/login-response.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) response: Response,

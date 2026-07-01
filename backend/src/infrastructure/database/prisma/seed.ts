@@ -1,62 +1,29 @@
 import { PrismaClient } from '@prisma/client';
+import { readFileSync } from 'node:fs';
 
 const prisma = new PrismaClient();
 
+type CitySeed = {
+  name: string;
+};
+
+const cities = JSON.parse(
+  readFileSync(
+    'src/infrastructure/database/prisma/data/colombia-cities.json',
+    'utf8',
+  ),
+) as CitySeed[];
+
 async function main() {
-  console.log('🗑️ Limpiando datos geográficos antiguos...');
-  // Al borrar los departamentos, por la regla "onDelete: Cascade", se borrarán sus ciudades automáticamente.
-  await prisma.department.deleteMany({});
+  console.log('Limpiando ciudades antiguas...');
+  await prisma.city.deleteMany({});
 
-  console.log('🇨🇴 Insertando departamentos y municipios de Colombia...');
-
-  // 1. Insertamos Antioquia con sus ciudades
-  await prisma.department.create({
-    data: {
-      name: 'Antioquia',
-      cities: {
-        create: [
-          { name: 'Medellín' },
-          { name: 'Envigado' },
-          { name: 'Rionegro' },
-          { name: 'Bello' },
-        ],
-      },
-    },
+  console.log('Insertando ciudades principales de Colombia...');
+  await prisma.city.createMany({
+    data: cities,
   });
 
-  // 2. Insertamos Cundinamarca con sus ciudades
-  await prisma.department.create({
-    data: {
-      name: 'Cundinamarca',
-      cities: {
-        create: [
-          { name: 'Bogotá' },
-          { name: 'Soacha' },
-          { name: 'Chía' },
-          { name: 'Zipaquirá' },
-        ],
-      },
-    },
-  });
-
-  // 3. Insertamos Valle del Cauca con sus ciudades
-  await prisma.department.create({
-    data: {
-      name: 'Valle del Cauca',
-      cities: {
-        create: [
-          { name: 'Cali' },
-          { name: 'Palmira' },
-          { name: 'Tuluá' },
-          { name: 'Buenaventura' },
-        ],
-      },
-    },
-  });
-
-  console.log(
-    '🌱 ¡Departamentos y ciudades inyectados con éxito en la semilla!',
-  );
+  console.log('Ciudades insertadas con exito.');
 }
 
 main()

@@ -7,27 +7,14 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-model Department {
-  @@map("Departments")
-
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-
-
-  cities    City[]
-}
 
 model City {
   @@map("Cities")
 
   id           String     @id @default(uuid())
   name         String     
-  createdAt    DateTime   @default(now())
 
-
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  bussiness BussinessModel[]
 }
 
 model UserModel {
@@ -40,26 +27,32 @@ model UserModel {
   lastName     String     
   role         String?     
   status       String     
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?   @updatedAt
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(3)
   needsOnBoarding Boolean      @default(false)
   
-  businessModelId String?
-  businessModel   BusinessModel? @relation(fields: [businessModelId], references: [id], onDelete: Cascade)
+  bussinessId String?
+  bussinessModel   BussinessModel? @relation(fields: [bussinessId], references: [id], onDelete: Cascade)
 }
 
-model BusinessModel {
-  @@map("BusinessModels")
+
+model BussinessModel {
+  @@map("Bussiness")
 
   id           String     @id
   name         String     
   phone        String     
-  cityId       String     
-  city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime   @default(now())
-  
+  email        String
+  type         String
+  status       String
+  address      String
 
-  updatedAt    DateTime?   @updatedAt
+  cityId       String     
+  city         City      @relation(fields: [cityId], references: [id], onDelete: Cascade)  
+
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(3)
+
+  users        UserModel[]
 }
 

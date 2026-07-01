@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -19,6 +20,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -29,10 +32,30 @@ export function LoginForm() {
   });
 
   async function onSubmit(data: LoginFormData) {
+    setServerError(null);
     try {
-      console.log("Login:", data);
+      const res = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setServerError(err.message ?? "Credenciales incorrectas");
+        return;
+      }
+
+      const user = await res.json() as { name: string; lastName: string; role: string };
+
+      if (user.role === "SUPER_ADMIN") {
+        router.push("/super-admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
-      // Error del servidor
+      setServerError("Error de conexión. Intenta de nuevo.");
     }
   }
 
@@ -101,6 +124,11 @@ export function LoginForm() {
           </button>
         </div>
       </div>
+
+      {/* Error del servidor */}
+      {serverError && (
+        <p className="text-[13px] text-red-500 text-center">{serverError}</p>
+      )}
 
       {/* Botón — delay 7 */}
       <div className="animate-fade-in-up animation-delay-7 pt-2">

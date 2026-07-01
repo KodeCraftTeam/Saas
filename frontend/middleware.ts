@@ -16,6 +16,7 @@ const protectedRoutes = [
   "/barbers",
   "/services",
   "/settings",
+  "/super-admin",
 ];
 
 const authRoutes = ["/login", "/register"];
