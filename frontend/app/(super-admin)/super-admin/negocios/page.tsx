@@ -238,13 +238,23 @@ export default function BusinessesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-pure-white px-2.5 py-0.5 text-xs font-medium text-rust border border-dove/15">
-                          <span className="relative flex h-1.5 w-1.5">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rust/30 opacity-60" />
-                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rust" />
-                          </span>
-                          Activo
-                        </span>
+                        {(() => {
+                          const statusMap = {
+                            ACTIVE: { label: "Activo", dot: "bg-emerald-500", ping: "bg-emerald-400/40", text: "text-emerald-600", bg: "bg-[#f0fdf4]" },
+                            PENDING_ONBOARDING: { label: "Pendiente", dot: "bg-amber-500", ping: "bg-amber-400/40", text: "text-amber-600", bg: "bg-[#fffbeb]" },
+                            INACTIVE: { label: "Inactivo", dot: "bg-dove", ping: "bg-dove/40", text: "text-graphite", bg: "bg-fog" },
+                          } as const;
+                          const s = statusMap[b.status] ?? statusMap.INACTIVE;
+                          return (
+                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium border border-dove/15 ${s.bg} ${s.text}`}>
+                              <span className="relative flex h-1.5 w-1.5">
+                                <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${s.ping}`} />
+                                <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                              </span>
+                              {s.label}
+                            </span>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))
