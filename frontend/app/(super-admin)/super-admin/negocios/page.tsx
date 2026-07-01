@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getBusinesses, createBusiness, getCities, Business, City } from "@/features/super-admin/api";
 import { useToast } from "@/shared/components/ui/Toast";
-import { Building2, Plus, Search, RefreshCw, X, MapPin, Phone, Mail } from "lucide-react";
+import { Building2, Plus, Search, RefreshCw, X, MapPin, Phone, Mail, CheckCircle2, Clock } from "lucide-react";
 
 export default function BusinessesPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -90,6 +90,15 @@ export default function BusinessesPage() {
     );
   });
 
+  const totalActive = businesses.filter((b) => b.status === "ACTIVE").length;
+  const totalPending = businesses.filter((b) => b.status === "PENDING_ONBOARDING").length;
+  const cityCounts = businesses.reduce<Record<string, number>>((acc, b) => {
+    const city = b.cityName || "Sin ciudad";
+    acc[city] = (acc[city] || 0) + 1;
+    return acc;
+  }, {});
+  const topCityEntry = Object.entries(cityCounts).sort((a, b) => b[1] - a[1])[0];
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-pure-white text-ink font-sohne select-none antialiased">
       {/* ── Top Bar ── */}
@@ -127,6 +136,33 @@ export default function BusinessesPage() {
           <p className="mt-1.5 text-[15px] text-ash font-[430]">
             Administra y monitorea todas las barberías, spas y centros de estética registrados en la plataforma.
           </p>
+        </div>
+
+        {/* ── Stat strip ── */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-cards bg-pure-white border border-dove/20 p-5 shadow-subtle flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-graphite uppercase tracking-wider">Negocios activos</p>
+              <p className="mt-2 text-2xl font-bold text-ink font-signifier">{totalActive}</p>
+            </div>
+            <CheckCircle2 className="h-8 w-8 text-rust/30" />
+          </div>
+
+          <div className="rounded-cards bg-apricot-wash p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-rust uppercase tracking-wider">Pendientes de aprobación</p>
+              <p className="mt-2 text-2xl font-bold text-rust font-signifier">{totalPending}</p>
+            </div>
+            <Clock className="h-8 w-8 text-rust/40" />
+          </div>
+
+          <div className="rounded-cards bg-pure-white border border-dove/20 p-5 shadow-subtle flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-graphite uppercase tracking-wider">Ciudad con más negocios</p>
+              <p className="mt-2 text-2xl font-bold text-ink font-signifier">{topCityEntry ? topCityEntry[0] : "—"}</p>
+            </div>
+            <MapPin className="h-8 w-8 text-rust/30" />
+          </div>
         </div>
 
         {/* ── Toolbar ── */}

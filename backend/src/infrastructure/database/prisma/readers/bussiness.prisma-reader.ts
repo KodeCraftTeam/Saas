@@ -16,6 +16,10 @@ export class BussinessPrismaReader implements BussinessReader {
     page: number = 1,
     limit: number = 10,
   ): Promise<ListBussinessReadModel> {
+    // page/limit llegan como string desde @Query() sin pipe de conversión
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
     const where = search
       ? {
           OR: [

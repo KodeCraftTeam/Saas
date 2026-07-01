@@ -13,6 +13,10 @@ export class UsersPrismaReader implements UsersReader {
     page: number = 1,
     limit: number = 10,
   ): Promise<ListUsersReadModel> {
+    // page/limit llegan como string desde @Query() sin pipe de conversión
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
     const where = search
       ? {
           OR: [
