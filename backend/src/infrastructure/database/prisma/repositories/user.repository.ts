@@ -44,6 +44,7 @@ export class UserRepository implements IUserRepository {
         role: user.role,
         status: user.status,
         password: user.getPassword(),
+        bussinessId: user.bussinessId,
       },
     });
   }

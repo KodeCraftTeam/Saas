@@ -30,6 +30,7 @@ model UserModel {
   createdAt    DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime?  @updatedAt @db.Timestamptz(3)
   needsOnBoarding Boolean      @default(false)
+  requiresPasswordChange Boolean @default(true)
   
   bussinessId String?
   bussinessModel   BussinessModel? @relation(fields: [bussinessId], references: [id], onDelete: Cascade)

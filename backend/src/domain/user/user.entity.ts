@@ -10,6 +10,7 @@ export class User {
     public role: Role | null,
     public status: UserStatus,
     private password: string | null,
+    public bussinessId?: string,
   ) {}
 
   public static Create(
@@ -20,8 +21,9 @@ export class User {
     role: Role | null,
     status: UserStatus,
     password: string | null,
+    bussinessId?: string,
   ): User {
-    return new User(id, email, name, lastName, role, status, password);
+    return new User(id, email, name, lastName, role, status, password, bussinessId);
   }
 
   getPassword(): string {

@@ -8,11 +8,19 @@ import { BussinessReader } from '../ports/bussiness/bussiness.reader';
 import { ListBussinessReadModel, BussinessReadModel } from '../read-models/bussiness/list-bussiness.read-model';
 import { UpdateBussinessDto } from '../dto/bussiness/update-bussiness.dto';
 
+import { IGeneratePassword, IPasswordHasher } from '../../domain/user/user.interface';
+import { IUserRepository } from '../../domain/user/user.repository';
+import { User } from '../../domain/user/user.entity';
+import { UserStatus, Role } from '../../domain/user/user.enums';
+
 @Injectable()
 export class BussinessService {
   constructor(
     private readonly bussinessRepository: IBussinessRepository,
     private readonly bussinessReader: BussinessReader,
+    private readonly generatePassword: IGeneratePassword,
+    private readonly passwordHasher: IPasswordHasher,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async createBussiness(
@@ -21,8 +29,12 @@ export class BussinessService {
     const emailExists = await this.bussinessRepository.findEmailExists(
       bussinessDto.email,
     );
+    if (emailExists) throw new Error('Email already exists in business');
 
-    if (emailExists) throw new Error('Email already exists');
+    const userEmailExists = await this.userRepository.findEmailExists(
+      bussinessDto.email,
+    );
+    if (userEmailExists) throw new Error('Email already exists in users');
 
     const business = Bussiness.Create(
       randomUUID(),
@@ -36,6 +48,45 @@ export class BussinessService {
     );
 
     await this.bussinessRepository.create(business);
+
+    // 2. Generar contraseña para el Admin del negocio
+    const plainPassword = this.generatePassword.generatePassword();
+    const passwordHash = await this.passwordHasher.hashPassword(plainPassword);
+
+    // 3. Crear el usuario vinculado al negocio
+    const user = User.Create(
+      randomUUID(),
+      bussinessDto.email,
+      'Admin',
+      bussinessDto.name,
+      Role.BUSSINESS_MANAGER,
+      UserStatus.ACTIVE,
+      passwordHash,
+      business.id
+    );
+
+    await this.userRepository.create(user);
+
+    // 4. Enviar notificación al mail-service
+    try {
+      await fetch('http://localhost:3002/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: bussinessDto.email,
+          subject: '¡Bienvenido a la Plataforma!',
+          template: 'business-welcome',
+          context: {
+            businessName: bussinessDto.name,
+            email: bussinessDto.email,
+            password: plainPassword,
+            login_url: 'http://localhost:3000/login'
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Error enviando peticion al mail-service:', error);
+    }
 
     return { id: business.id };
   }
