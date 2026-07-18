@@ -42,7 +42,7 @@ export interface City {
   name: string;
 }
 
-const BACKEND_URL = "http://localhost:3001/api";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 /** Backend shape de GET /bussiness/list — nombres denormalizados, sin cityId ni createdAt. */
 interface BussinessReadModel {
