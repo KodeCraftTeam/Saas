@@ -9,6 +9,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ITokenService } from '../application/interfaces/token.interface';
 import { JwtTokenService } from './services/jwt-token.service';
+import { IMailService } from '../application/interfaces/mail.interface';
+import { HttpMailService } from './services/http-mail.service';
 
 @Module({
   imports: [
@@ -38,8 +40,12 @@ import { JwtTokenService } from './services/jwt-token.service';
       provide: ITokenService,
       useClass: JwtTokenService,
     },
+    {
+      provide: IMailService,
+      useClass: HttpMailService,
+    },
   ],
 
-  exports: [IGeneratePassword, IPasswordHasher, ITokenService],
+  exports: [IGeneratePassword, IPasswordHasher, ITokenService, IMailService],
 })
 export class InfrastructureModule {}

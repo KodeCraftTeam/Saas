@@ -10,6 +10,8 @@ import { IUserRepository } from '../../domain/user/user.repository';
 import { CreateUserDto } from '../dto/user/create-user.dto';
 import { UsersReader } from '../ports/users/users.reader';
 import { ListUsersReadModel } from '../read-models/users/list-users.read-model';
+import { IMailService } from '../interfaces/mail.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -20,14 +22,16 @@ export class UserService {
     private readonly passwordHasher: IPasswordHasher,
     private readonly userRepository: IUserRepository,
     private readonly usersReader: UsersReader,
+    private readonly mailService: IMailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async createUser(userDto: CreateUserDto): Promise<string> {
     const password = this.generatePassword.generatePassword();
 
-    console.log(password, 'password');
-
     const passwordHash = await this.passwordHasher.hashPassword(password);
+
+    console.log(password);
 
     const emailAlreadyExists = await this.userRepository.findEmailExists(
       userDto.email,
@@ -46,6 +50,22 @@ export class UserService {
       UserStatus.ACTIVE,
       passwordHash,
     );
+
+    // try {
+    //   await this.mailService.send({
+    //     to: userDto.email,
+    //     subject: '¡Bienvenido a la Plataforma!',
+    //     template: 'business-welcome',
+    //     context: {
+    //       businessName: userDto.name,
+    //       email: userDto.email,
+    //       password: password,
+    //       login_url: this.configService.get<string>('LOGIN_URL'),
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.error('Error sending welcome mail:', error);
+    // }
 
     await this.userRepository.create(user);
 

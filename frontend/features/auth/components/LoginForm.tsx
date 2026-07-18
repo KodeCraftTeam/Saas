@@ -23,6 +23,8 @@ export function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
   const {
     register,
     handleSubmit,
@@ -34,7 +36,7 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormData) {
     setServerError(null);
     try {
-      const res = await fetch("http://localhost:3001/api/auth/login", {
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -60,7 +62,7 @@ export function LoginForm() {
   }
 
   async function fetchGoogleToken() {
-    window.location.href = "http://localhost:3001/api/auth/google";
+    window.location.href = `${apiUrl}/auth/google`;
   }
 
   return (
