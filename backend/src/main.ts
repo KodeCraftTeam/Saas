@@ -2,14 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://saas-kode-craft.vercel.app/'], // solo permitir tu frontend
+    origin: [
+      'http://localhost:3000',
+      configService.get<string>('FRONTEND_URL'),
+    ],
     credentials: true, // para cookies/auth
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
