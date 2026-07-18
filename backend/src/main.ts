@@ -9,7 +9,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: 'http://localhost:3000', // solo permitir tu frontend
+    origin: ['http://localhost:3000', 'https://saas-kode-craft.vercel.app/'], // solo permitir tu frontend
     credentials: true, // para cookies/auth
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
