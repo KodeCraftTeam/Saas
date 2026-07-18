@@ -13,6 +13,8 @@ import { IUserRepository } from '../../domain/user/user.repository';
 import { User } from '../../domain/user/user.entity';
 import { UserStatus, Role } from '../../domain/user/user.enums';
 
+import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class BussinessService {
   constructor(
@@ -21,6 +23,7 @@ export class BussinessService {
     private readonly generatePassword: IGeneratePassword,
     private readonly passwordHasher: IPasswordHasher,
     private readonly userRepository: IUserRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   async createBussiness(
@@ -69,7 +72,8 @@ export class BussinessService {
 
     // 4. Enviar notificación al mail-service
     try {
-      await fetch('http://localhost:3002/mail/send', {
+      const mailServiceUrl = this.configService.get<string>('MAIL_SERVICE_URL') || 'http://localhost:3002';
+      await fetch(`${mailServiceUrl}/mail/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
